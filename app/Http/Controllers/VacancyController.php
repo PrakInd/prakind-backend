@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\VacancyResource;
+use App\Models\Vacancy;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 
 class VacancyController extends Controller
@@ -13,7 +16,7 @@ class VacancyController extends Controller
      */
     public function index()
     {
-        //
+        return VacancyResource::collection(Vacancy::all());
     }
 
     /**
@@ -24,7 +27,40 @@ class VacancyController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $this->validate($request, [
+            'name' => 'required|string',
+            'description' => 'required|string',
+            'requirements' => 'required|string',
+            'location' => 'nullable|string',
+            'sector'=> 'required|string',
+            'type' => 'required',
+            'paid' => 'required',
+            'period_start' => 'required',
+            'period_end' => 'required'
+        ]);
+
+        try {
+            $vacancy = Vacancy::create([
+                'company_id' => $request->company_id,
+                'name' => $request->name,
+                'description' => $request->description,
+                'requirements' => $request->requirements,
+                'location' => $request->location,
+                'sector'=> $request->sector,
+                'type' => $request->type,
+                'paid' => $request->paid,
+                'period_start' => $request->period_start,
+                'period_end' => $request->period_end
+            ]);
+
+            return response()->json([$vacancy], 201);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'code' => 404,
+                'message' => 'Not Found',
+                'description' => 'Vacancy creation failed.'
+            ], 404);
+        }
     }
 
     /**
@@ -35,7 +71,15 @@ class VacancyController extends Controller
      */
     public function show($id)
     {
-        //
+        try {
+            return new VacancyResource(Vacancy::findOrFail($id));
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'code' => 404,
+                'message' => 'Not Found',
+                'description' => 'Vacancy with id ' . $id . ' not found.'
+            ], 404);
+        }
     }
 
     /**
@@ -47,7 +91,41 @@ class VacancyController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $this->validate($request, [
+            'name' => 'required|string',
+            'description' => 'required|string',
+            'requirements' => 'required|string',
+            'location' => 'nullable|string',
+            'sector'=> 'required|string',
+            'type' => 'required',
+            'paid' => 'required',
+            'period_start' => 'required',
+            'period_end' => 'required'
+        ]);
+
+        try {
+            $vacancy = Vacancy::findOrFail($id);
+            $vacancy->update([
+                'company_id' => $request->company_id,
+                'name' => $request->name,
+                'description' => $request->description,
+                'requirements' => $request->requirements,
+                'location' => $request->location,
+                'sector'=> $request->sector,
+                'type' => $request->type,
+                'paid' => $request->paid,
+                'period_start' => $request->period_start,
+                'period_end' => $request->period_end
+            ]);
+
+            return new VacancyResource($vacancy);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'code' => 404,
+                'message' => 'Not Found',
+                'description' => 'Vacancy creation failed.'
+            ], 404);
+        }
     }
 
     /**
@@ -58,6 +136,20 @@ class VacancyController extends Controller
      */
     public function destroy($id)
     {
-        //
+        try {
+            Vacancy::findOrFail($id)->delete();
+
+            return response()->json([
+                'code' => 200,
+                'message' => 'Successfully Deleted',
+                'description' => 'Vacancy with id ' . $id . ' successfully deleted.'
+            ], 200);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'code' => 404,
+                'message' => 'Not Found',
+                'description' => 'Vacancy with id ' . $id . ' not found.'
+            ], 404);
+        }
     }
 }

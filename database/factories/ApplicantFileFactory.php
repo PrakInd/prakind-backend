@@ -18,9 +18,8 @@ class ApplicantFileFactory extends Factory
 
         return [
             'application_id' => $this->faker->randomElement($application_ids),
-            'recommendation_letter' => $this->faker->fileExtension(),
-            'proposal' => $this->faker->fileExtension(),
-            // 'portfolio' => $this->faker->fileExtension(),
+            'recommendation_letter' => 'recommendation_letter.' . $this->faker->fileExtension(),
+            'proposal' => 'proposal.' . $this->faker->fileExtension()
         ];
     }
 }

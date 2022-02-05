@@ -16,10 +16,9 @@ class CreateApplicationsTable extends Migration
         Schema::create('applications', function (Blueprint $table) {
             $table->id();
             $table->foreignId('profile_id')->constrained('profiles')->onUpdate('cascade')->onDelete('cascade');
-            $table->foreignId('group_id')->constrained('groups')->onUpdate('cascade')->onDelete('cascade');
+            $table->foreignId('group_id')->nullable()->constrained('groups')->onUpdate('cascade')->onDelete('cascade');
             $table->foreignId('vacancy_id')->constrained('vacancies')->onUpdate('cascade')->onDelete('cascade');
-            $table->foreignId('certificate_id')->nullable()->constrained('certificates')->onUpdate('cascade')->onDelete('cascade');
-            $table->enum('status', ['in_selection', 'accepted', 'declined', 'taken', 'not_taken']);
+            $table->enum('status', ['dalam_seleksi', 'diterima', 'ditolak', 'diambil', 'tidak_diambil']);
             $table->string('certificate')->nullable()->default('certificate.pdf');
             $table->string('period_start');
             $table->string('period_end');

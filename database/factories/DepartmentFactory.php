@@ -18,7 +18,7 @@ class DepartmentFactory extends Factory
 
         return [
             'institution_id' => $this->faker->randomElement($institution_ids),
-            'name' => $this->faker->jobTitle(),
+            'name' => $this->faker->jobTitle()
         ];
     }
 }

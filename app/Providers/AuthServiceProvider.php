@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\Roles;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 
@@ -23,19 +24,18 @@ class AuthServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        // $this->registerPolicies();
+        $this->registerPolicies();
 
-        $this->app['auth']->viaRequest('api', function ($request) {
-            return app('auth')->setRequest($request)->user();
-        });
+        // $this->app['auth']->viaRequest('api', function ($request) {
+        //     return app('auth')->setRequest($request)->user();
+        // });
 
         // Gate Definition
-        Gate::define('admin', function ($user) {
-            return $user->role_id === 1;
-        });
-
-        Gate::define('pelamar', function ($user) {
-            return $user->role_id === 2;
-        });
+        // Gate::define('admin', function ($user) {
+        //     return $user->role_id == Roles::IS_ADMIN;
+        // });
+        // Gate::define('pelamar', function ($user) {
+        //     return $user->role_id == Roles::IS_PELAMAR;
+        // });
     }
 }

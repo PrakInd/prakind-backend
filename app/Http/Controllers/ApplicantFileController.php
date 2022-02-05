@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\ApplicantFileResource;
+use Exception;
 use App\Models\ApplicantFile;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
+use App\Http\Resources\ApplicantFileResource;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class ApplicantFileController extends Controller
 {
@@ -28,29 +28,20 @@ class ApplicantFileController extends Controller
      */
     public function store(Request $request)
     {
-        if (Gate::allows('pelamar')) {
-            $this->validate($request, [
-                'address' => 'required|string',
-                'phone' => 'required|string',
-                'gpa' => 'required|string',
-                'semester' => 'required|numerical',
+        try {
+            $applicant_file = ApplicantFile::create([
+                'application_id' => $request->application_id,
+                'recommendation_letter' => $request->recommendation_letter,
+                'proposal' => $request->proposal
             ]);
 
-            try {
-                $applicant_file = ApplicantFile::create([
-                    'application_id' => $request->application_id,
-                    'recommendation_letter' => $request->recommendation_letter,
-                    'proposal' => $request->proposal,
-                ]);
-
-                return response()->json([$applicant_file], 201);
-            } catch (ModelNotFoundException $e) {
-                return response()->json([
-                    'code' => 404,
-                    'message' => 'Not Found',
-                    'description' => 'Application file creation failed.'
-                ], 404);
-            }
+            return response()->json([$applicant_file], 201);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'code' => 404,
+                'message' => 'Not Found',
+                'description' => 'Applicant file creation failed.'
+            ], 404);
         }
     }
 
@@ -63,15 +54,13 @@ class ApplicantFileController extends Controller
     public function show($id)
     {
         try {
-            if (Gate::allows('admin')) {
-                return new ApplicantFileResource(ApplicantFile::findOrFail($id));
-            }
+            return new ApplicantFileResource(ApplicantFile::findOrFail($id));
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'code' => 404,
                 'message' => 'Not Found',
-                'description' => $e->getMessage(),
-            ]);
+                'description' => 'Applicant file with id ' . $id . ' not found.'
+            ], 404);
         }
     }
 
@@ -84,25 +73,7 @@ class ApplicantFileController extends Controller
      */
     public function update(Request $request, $id)
     {
-        if (Gate::allows('pelamar')) {
-            $this->validate($request, [
-                'recommendation_letter' => 'required',
-                'proposal' => 'required',
-            ]);
-
-            try {
-                $applicant_file = ApplicantFile::findOrFail($id);
-                $applicant_file->update($request->all());
-
-                return new ApplicantFileResource($applicant_file);
-            } catch (ModelNotFoundException $e) {
-                return response()->json([
-                    'code' => 404,
-                    'message' => 'Not Found',
-                    'description' => 'Applicant file with ' . $id . ' not found.'
-                ], 404);
-            }
-        }
+        //
     }
 
     /**
@@ -113,18 +84,51 @@ class ApplicantFileController extends Controller
      */
     public function destroy($id)
     {
-        if (Gate::allows('pelamar')) {
-            try {
-                ApplicantFile::findOrFail($id)->delete();
-    
-                return response()->json([], 204);
-            } catch (ModelNotFoundException $e) {
-                return response()->json([
-                    'code' => 404,
-                    'message' => 'Not Found',
-                    'description' => 'Applicant file with' . $id . ' not found.'
-                ], 404);
-            }
+        try {
+            ApplicantFile::findOrFail($id)->delete();
+
+            return response()->json([
+                'code' => 200,
+                'message' => 'Successfully Deleted',
+                'description' => 'Applicant file with id ' . $id . ' successfully deleted.'
+            ], 200);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'code' => 404,
+                'message' => 'Not Found',
+                'description' => 'Applicant file with id ' . $id . ' not found.'
+            ], 404);
         }
+    }
+
+    public function uploadDocument(Request $request, $id, $document)
+    {
+        try {
+            $request->validate([
+                $this->documentType($document) => ['mimes:pdf', 'max:2048'],
+            ]);
+    
+            $data = ApplicantFile::findOrFail($id);
+            $fileName = $request->id . "-" . $document . "." . $request->$document->extension();
+            $path = public_path('applicant-files/');
+            $request->$document->move($path, $fileName);
+            $file = "applicant-files/" . $fileName;
+            $data->$document = $file;
+            $data->save();
+    
+            return response()->json([
+                'code' => 200,
+                'data' => new ApplicantFileResource($data)
+            ]);
+        } catch (Exception $e) {
+            return $e->getMessage();
+        }
+    }
+
+    public function documentType($doc)
+    {
+        if ($doc == 'recommendation-letter') return 'recommendation_letter';
+        
+        return 'proposal';
     }
 }

@@ -24,9 +24,8 @@ class DatabaseSeeder extends Seeder
             GroupSeeder::class,
             CompanySeeder::class,
             VacancySeeder::class,
-            // CertificateSeeder::class,
             ApplicationSeeder::class,
-            ApplicantFileSeeder::class,
+            ApplicantFileSeeder::class
         ]);
     }
 }

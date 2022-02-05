@@ -19,7 +19,7 @@ class CreateProfilesTable extends Migration
             $table->foreignId('institution_id')->constrained('institutions')->onUpdate('cascade')->onDelete('cascade');
             $table->string('address');
             $table->string('phone', 20);
-            $table->integer('semester');
+            $table->string('semester');
             $table->string('gpa', 10);
             $table->string('cv')->default('cv.pdf');
             $table->string('transcript')->default('transcript.pdf');

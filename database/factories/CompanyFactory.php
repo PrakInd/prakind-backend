@@ -28,7 +28,7 @@ class CompanyFactory extends Factory
             'phone' => $this->faker->phoneNumber(),
             'website' => $this->faker->domainName(),
             'number_of_employee' => $this->faker->numberBetween(0, 200),
-            'logo' => $this->faker->imageUrl($width = 640, $height = 640)
+            'logo' => $this->faker->imageUrl(640, 640)
         ];
     }
 }

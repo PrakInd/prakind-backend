@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Department;
-use App\Http\Resources\DepartmentResource;
-use Illuminate\Http\Request;
+use App\Http\Resources\RolesResource;
+use App\Models\Roles;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Http\Request;
 
-class DepartmentController extends Controller
+class RolesController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -16,7 +16,7 @@ class DepartmentController extends Controller
      */
     public function index()
     {
-        return DepartmentResource::collection(Department::all());
+        return RolesResource::collection(Roles::all());
     }
 
     /**
@@ -28,21 +28,20 @@ class DepartmentController extends Controller
     public function store(Request $request)
     {
         $this->validate($request, [
-            'name' => 'required|string',
+            'name' => 'required|string'
         ]);
 
         try {
-            $department = Department::create([
-                'institution_id' => $request->institution_id,
+            $role = Roles::create([
                 'name' => $request->name
             ]);
 
-            return response()->json([$department], 201);
+            return response()->json([$role], 201);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'code' => 404,
                 'message' => 'Not Found',
-                'description' => 'Department creation failed.'
+                'description' => 'Role creation failed.'
             ], 404);
         }
     }
@@ -56,13 +55,13 @@ class DepartmentController extends Controller
     public function show($id)
     {
         try {
-            return new DepartmentResource(Department::findOrFail($id));
+            return new RolesResource(Roles::findOrFail($id));
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'code' => 404,
                 'message' => 'Not Found',
-                'description' => 'Department with id ' . $id . ' not found.'
-            ], 404);
+                'description' => 'Role with id ' . $id . ' not found.'
+            ]);
         }
     }
 
@@ -80,17 +79,17 @@ class DepartmentController extends Controller
         ]);
 
         try {
-            $department = Department::findOrFail($id);
-            $department->update([
+            $role = Roles::findOrFail($id);
+            $role->update([
                 'name' => $request->name
             ]);
 
-            return response()->json([$department], 201);
+            return new RolesResource($role);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'code' => 404,
                 'message' => 'Not Found',
-                'description' => 'Department with id ' . $id . ' not found.'
+                'description' => 'Role with id ' . $id . ' not found.'
             ], 404);
         }
     }
@@ -104,18 +103,18 @@ class DepartmentController extends Controller
     public function destroy($id)
     {
         try {
-            Department::findOrFail($id)->delete();
+            Roles::findOrFail($id)->delete();
 
             return response()->json([
                 'code' => 200,
                 'message' => 'Successfully Deleted',
-                'description' => 'Department with id ' . $id . ' successfully deleted.'
+                 'description' => 'Role with id ' . $id . ' successfully deleted.'
             ], 200);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'code' => 404,
                 'message' => 'Not Found',
-                'description' => 'Department with id ' . $id . ' not found.'
+                'description' => 'Role with id ' . $id . ' not found.'
             ], 404);
         }
     }

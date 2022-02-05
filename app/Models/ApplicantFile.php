@@ -13,6 +13,6 @@ class ApplicantFile extends Model
 
     public function application()
     {
-        return $this->belongsTo('\App\Models\Application');
+        return $this->belongsTo('\App\Models\Application', 'application_id');
     }
 }

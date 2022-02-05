@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Models\Roles;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class UserResource extends JsonResource
@@ -13,10 +14,10 @@ class UserResource extends JsonResource
      * @return array|\Illuminate\Contracts\Support\Arrayable|\JsonSerializable
      */
     public function toArray($request)
-    {
+    {   
         return [
             'id' => $this->id,
-            'role_id' => $this->role_id,
+            'roles' => new RolesResource($this->roles),
             'name' => $this->name,
             'email' => $this->email,
             'avatar' => $this->avatar

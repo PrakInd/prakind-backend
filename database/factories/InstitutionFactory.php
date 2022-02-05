@@ -16,7 +16,7 @@ class InstitutionFactory extends Factory
     {
         return [
             'name' => $this->faker->company(),
-            'level' => $this->faker->randomElement(['smk', 'perguruan tinggi']),
+            'level' => $this->faker->randomElement(['smk', 'perguruan_tinggi'])
         ];
     }
 }

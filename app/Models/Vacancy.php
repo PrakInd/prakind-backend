@@ -18,11 +18,6 @@ class Vacancy extends Model
 
     public function company()
     {
-        return $this->belongsTo('\App\Models\Company');
+        return $this->belongsTo('\App\Models\Company', 'company_id');
     }
-
-    // public function certificate()
-    // {
-    //     return $this->hasOne('\App\Models\Certificate');
-    // }
 }

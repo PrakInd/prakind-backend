@@ -16,7 +16,7 @@ class CreateInstitutionsTable extends Migration
         Schema::create('institutions', function (Blueprint $table) {
             $table->id();
             $table->string('name', 100);
-            $table->enum('level', ['smk', 'perguruan tinggi']);
+            $table->enum('level', ['smk', 'perguruan_tinggi']);
             $table->timestamps();
         });
     }

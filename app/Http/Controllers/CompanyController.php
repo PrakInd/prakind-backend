@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use Exception;
 use App\Models\Company;
-use App\Http\Requests\StoreCompanyRequest;
-use App\Http\Requests\UpdateCompanyRequest;
+use App\Http\Resources\CompanyResource;
+use Illuminate\Http\Request;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class CompanyController extends Controller
 {
@@ -15,7 +17,7 @@ class CompanyController extends Controller
      */
     public function index()
     {
-        //
+        return CompanyResource::collection(Company::all());
     }
 
     /**
@@ -31,23 +33,56 @@ class CompanyController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \App\Http\Requests\StoreCompanyRequest  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(StoreCompanyRequest $request)
+    public function store(Request $request)
     {
-        //
+        $this->validate($request, [
+            'name' => 'required|string',
+            'address' => 'required|string',
+            'phone'=> 'required|string',
+            'website' => 'nullable|string',
+            'description' => 'required|string',
+            'number_of_employee' => 'required|integer'
+        ]);
+
+        try {
+            $company = Company::create([
+                'user_id' => $request->user_id,
+                'name' => $request->name,
+                'address' => $request->address,
+                'phone'=> $request->phone,
+                'website' => $request->website,
+                'description' => $request->description,
+                'number_of_employee' => $request->number_of_employee
+            ]);
+
+            return response()->json([$company], 201);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'code' => 404,
+                'message' => 'Not Found',
+                'description' => 'Company creation failed.'
+            ], 404);
+        }
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Company  $company
      * @return \Illuminate\Http\Response
      */
-    public function show(Company $company)
+    public function show($id)
     {
-        //
+        try {
+            return new CompanyResource(Company::findOrFail($id));
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'code' => 404,
+                'message' => 'Not Found',
+                'description' => 'Company with id ' . $id . ' not found.'
+            ], 404);
+        }
     }
 
     /**
@@ -64,23 +99,86 @@ class CompanyController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \App\Http\Requests\UpdateCompanyRequest  $request
-     * @param  \App\Models\Company  $company
      * @return \Illuminate\Http\Response
      */
-    public function update(UpdateCompanyRequest $request, Company $company)
+    public function update(Request $request, $id)
     {
-        //
+        $this->validate($request, [
+            'name' => 'required|string',
+            'address' => 'required|string',
+            'phone'=> 'required|string',
+            'website' => 'nullable|string',
+            'description' => 'required|string',
+            'number_of_employee' => 'required|integer'
+        ]);
+
+        try {
+            $company = Company::findOrFail($id);
+            $company->update([
+                'user_id' => $request->user_id,
+                'name' => $request->name,
+                'address' => $request->address,
+                'phone'=> $request->phone,
+                'website' => $request->website,
+                'description' => $request->description,
+                'number_of_employee' => $request->number_of_employee
+            ]);
+
+            return new CompanyResource($company);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'code' => 404,
+                'message' => 'Not Found',
+                'description' => 'Company with id ' . $id . ' not found.'
+            ], 404);
+        }
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Company  $company
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Company $company)
+    public function destroy($id)
     {
-        //
+        try {
+            Company::findOrFail($id)->delete();
+
+            return response()->json([
+                'code' => 200,
+                'message' => 'Successfully Deleted',
+                'description' => 'Company with id ' . $id . ' successfully deleted.'
+            ], 200);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'code' => 404,
+                'message' => 'Not Found',
+                'description' => 'Company with id ' . $id . ' not found.'
+            ], 404);
+        }
+    }
+
+    public function uploadLogo(Request $request, $id)
+    {
+        try {
+            $request->validate([
+                'logo' => ['mimes:png,jpg,jpeg', 'max:2048'],
+            ]);
+    
+            $data = Company::findOrFail($id);
+            $imageName = $request->id . "-" . "companyLogo" . "." . $request->logo->extension();
+            $path = public_path('company-logo/');
+            $request->logo->move($path, $imageName);
+            $image = "company-logo/" . $imageName;
+            $data->logo = $image;
+            $data->save();
+    
+            return response()->json([
+                'code' => 200,
+                'data' => new CompanyResource($data)
+            ]);
+        } catch (Exception $e) {
+            return $e->getMessage();
+        }
     }
 }

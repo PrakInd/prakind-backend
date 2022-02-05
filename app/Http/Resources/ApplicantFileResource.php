@@ -18,7 +18,7 @@ class ApplicantFileResource extends JsonResource
             'id' => $this->id,
             'application_id' => $this->application_id,
             'recommendation_letter' => $this->recommendation_letter,
-            'proposal' => $this->proposal,
+            'proposal' => $this->proposal
         ];
     }
 }

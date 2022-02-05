@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\ProfileResource;
+use Exception;
 use App\Models\Profile;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
+use App\Http\Resources\ProfileResource;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class ProfileController extends Controller
 {
@@ -27,36 +27,31 @@ class ProfileController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
-    {
-        if (Gate::allows('pelamar')) {
-            $this->validate($request, [
-                'address' => 'required|string',
-                'phone' => 'required|string',
-                'gpa' => 'required|string',
-                'semester' => 'required|numerical',
+    {   
+        $this->validate($request, [
+            'address' => 'required|string',
+            'phone' => 'required|string',
+            'gpa' => 'required|string',
+            'semester' => 'required'
+        ]);
+
+        try {
+            $profile = Profile::create([
+                'user_id' => $request->user_id,
+                'institution_id' => $request->institution_id,
+                'address' => $request->address,
+                'phone' => $request->phone,
+                'gpa' => $request->gpa,
+                'semester' => $request->semester,
             ]);
 
-            try {
-                $profile = Profile::create([
-                    'user_id' => $request->user_id,
-                    'institution_id' => $request->institution_id,
-                    'address' => $request->address,
-                    'phone' => $request->phone,
-                    'gpa' => $request->gpa,
-                    'semester' => $request->semester,
-                    'cv' => $request->cv,
-                    'transcript' => $request->transcript,
-                    'portfolio' => $request->portfolio,
-                ]);
-
-                return response()->json([$profile], 201);
-            } catch (ModelNotFoundException $e) {
-                return response()->json([
-                    'code' => 404,
-                    'message' => 'Not Found',
-                    'description' => 'Profile creation failed.'
-                ], 404);
-            }
+            return response()->json([$profile], 201);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'code' => 404,
+                'message' => 'Not Found',
+                'description' => 'Profile creation failed.'
+            ], 404);
         }
     }
 
@@ -69,15 +64,13 @@ class ProfileController extends Controller
     public function show($id)
     {
         try {
-            if (Gate::allows('admin')) {
-                return new ProfileResource(Profile::findOrFail($id));
-            }
+            return new ProfileResource(Profile::findOrFail($id));
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'code' => 404,
                 'message' => 'Not Found',
-                'description' => $e->getMessage(),
-            ]);
+                'description' => 'Profile with id ' . $id . ' not found.'
+            ], 404);
         }
     }
 
@@ -90,26 +83,33 @@ class ProfileController extends Controller
      */
     public function update(Request $request, $id)
     {
-        if (Gate::allows('pelamar')) {
-            $this->validate($request, [
-                'address' => 'required|string',
-                'phone' => 'required|string',
-                'gpa' => 'required|string',
-                'semester' => 'required|numerical',
+        // $this->authorize('update', $id);
+
+        $this->validate($request, [
+            'address' => 'required|string',
+            'phone' => 'required|string',
+            'gpa' => 'required|string',
+            'semester' => 'required'
+        ]);
+
+        try {
+            $profile = Profile::findOrFail($id);
+            $profile->update([
+                'user_id' => $request->user_id,
+                'institution_id' => $request->institution_id,
+                'address' => $request->address,
+                'phone' => $request->phone,
+                'gpa' => $request->gpa,
+                'semester' => $request->semester
             ]);
 
-            try {
-                $profile = Profile::findOrFail($id);
-                $profile->update($request->all());
-
-                return new ProfileResource($profile);
-            } catch (ModelNotFoundException $e) {
-                return response()->json([
-                    'code' => 404,
-                    'message' => 'Not Found',
-                    'description' => 'Profile with ' . $id . ' not found.'
-                ], 404);
-            }
+            return new ProfileResource($profile);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'code' => 404,
+                'message' => 'Not Found',
+                'description' => 'Profile with id ' . $id . ' not found.'
+            ], 404);
         }
     }
 
@@ -121,18 +121,52 @@ class ProfileController extends Controller
      */
     public function destroy($id)
     {
-        if (Gate::allows('pelamar')) {
-            try {
-                Profile::findOrFail($id)->delete();
-    
-                return response()->json([], 204);
-            } catch (ModelNotFoundException $e) {
-                return response()->json([
-                    'code' => 404,
-                    'message' => 'Not Found',
-                    'description' => 'Profile with' . $id . ' not found.'
-                ], 404);
-            }
+        try {
+            Profile::findOrFail($id)->delete();
+
+            return response()->json([
+                'code' => 200,
+                'message' => 'Successfully Deleted',
+                 'description' => 'Profile with id ' . $id . ' successfully deleted.'
+            ], 200);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'code' => 404,
+                'message' => 'Not Found',
+                'description' => 'Profile with id ' . $id . ' not found.'
+            ], 404);
         }
+    }
+
+    public function uploadDocument(Request $request, $id, $document)
+    {
+        try {
+            $request->validate([
+                $this->documentType($document) => ['mimes:pdf', 'max:2048'],
+            ]);
+    
+            $data = Profile::findOrFail($id);
+            $fileName = $request->id . "-" . $document . "." . $request->$document->extension();
+            $path = public_path('profile-documents/');
+            $request->$document->move($path, $fileName);
+            $file = "profile-documents/" . $fileName;
+            $data->$document = $file;
+            $data->save();
+    
+            return response()->json([
+                'code' => 200,
+                'data' => new ProfileResource($data)
+            ]);
+        } catch (Exception $e) {
+            return $e->getMessage();
+        }
+    }
+
+    public function documentType($doc)
+    {
+        if ($doc == 'cv') return 'cv';
+        if ($doc == 'transcript') return 'transcript';
+
+        return 'portfolio';
     }
 }

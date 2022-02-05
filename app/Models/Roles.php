@@ -11,6 +11,9 @@ class Roles extends Model
 
     protected $guarded = ['id'];
 
+    public const IS_ADMIN = 1; 
+    public const IS_PELAMAR = 2; 
+
     public function user()
     {
         return $this->hasMany('\App\Models\User');

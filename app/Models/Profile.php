@@ -13,7 +13,7 @@ class Profile extends Model
 
     public function user()
     {
-        return $this->belongsTo('\App\Models\User');
+        return $this->belongsTo('\App\Models\User', 'user_id');
     }
 
     public function group()
@@ -23,7 +23,7 @@ class Profile extends Model
 
     public function institution()
     {
-        return $this->belongsTo('\App\Models\Institution');
+        return $this->belongsTo('\App\Models\Institution', 'institution_id');
     }
 
     public function application()

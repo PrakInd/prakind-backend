@@ -13,12 +13,12 @@ class Application extends Model
 
     public function profile()
     {
-        return $this->belongsTo('\App\Models\Profile');
+        return $this->belongsTo('\App\Models\Profile', 'profile_id');
     }
 
     public function vacancy()
     {
-        return $this->belongsTo('\App\Models\Vacancy');
+        return $this->belongsTo('\App\Models\Vacancy', 'vacancy_id');
     }
 
     public function applicant_file()
@@ -28,11 +28,6 @@ class Application extends Model
 
     public function group()
     {
-        return $this->belongsTo('\App\Models\Group');
+        return $this->belongsTo('\App\Models\Group', 'group_id');
     }
-
-    // public function certificate()
-    // {
-    //     return $this->belongsTo('\App\Models\Certificate');
-    // }
 }

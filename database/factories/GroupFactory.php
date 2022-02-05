@@ -14,7 +14,7 @@ class GroupFactory extends Factory
     public function definition()
     {
         return [
-            'referral_code' => $this->faker->url()
+            'referral_code' => $this->faker->regexify('[A-Z]{7}[0-4]{5}')
         ];
     }
 }

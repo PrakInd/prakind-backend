@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\InstitutionResource;
 use App\Models\Institution;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
+use App\Http\Resources\InstitutionResource;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class InstitutionController extends Controller
 {
@@ -28,26 +27,24 @@ class InstitutionController extends Controller
      */
     public function store(Request $request)
     {
-        if (Gate::allows('admin')) {
-            $this->validate($request, [
-                'name' => 'required|string',
-                'level' => 'required|string',
+        $this->validate($request, [
+            'name' => 'required|string',
+            'level' => 'required|string'
+        ]);
+
+        try {
+            $institution = Institution::create([
+                'name' => $request->name,
+                'level' => $request->level
             ]);
 
-            try {
-                $institution = Institution::create([
-                    'name' => $request->name,
-                    'level' => $request->level,
-                ]);
-
-                return response()->json([$institution], 201);
-            } catch (ModelNotFoundException $e) {
-                return response()->json([
-                    'code' => 404,
-                    'message' => 'Not Found',
-                    'description' => 'Institution creation failed.'
-                ], 404);
-            }
+            return response()->json([$institution], 201);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'code' => 404,
+                'message' => 'Not Found',
+                'description' => 'Institution creation failed.'
+            ], 404);
         }
     }
 
@@ -59,7 +56,15 @@ class InstitutionController extends Controller
      */
     public function show($id)
     {
-        //
+        try {
+            return new InstitutionResource(Institution::findOrFail($id));
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'code' => 404,
+                'message' => 'Not Found',
+                'description' => 'Institution with id ' . $id . ' not found.'
+            ], 404);
+        }
     }
 
     /**
@@ -71,24 +76,22 @@ class InstitutionController extends Controller
      */
     public function update(Request $request, $id)
     {
-        if (Gate::allows('admin')) {
-            $this->validate($request, [
-                'name' => 'required|string',
-                'level' => 'required|string',
-            ]);
+        $this->validate($request, [
+            'name' => 'required|string',
+            'level' => 'required|string'
+        ]);
 
-            try {
-                $institution = Institution::findOrFail($id);
-                $institution->update($request->all());
+        try {
+            $institution = Institution::findOrFail($id);
+            $institution->update($request->all());
 
-                return new InstitutionResource($institution);
-            } catch (ModelNotFoundException $e) {
-                return response()->json([
-                    'code' => 404,
-                    'message' => 'Not Found',
-                    'description' => 'Institution with ' . $id . ' not found.'
-                ], 404);
-            }
+            return new InstitutionResource($institution);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'code' => 404,
+                'message' => 'Not Found',
+                'description' => 'Institution with id ' . $id . ' not found.'
+            ], 404);
         }
     }
 
@@ -100,18 +103,20 @@ class InstitutionController extends Controller
      */
     public function destroy($id)
     {
-        if (Gate::allows('admin')) {
-            try {
-                Institution::findOrFail($id)->delete();
-    
-                return response()->json([], 204);
-            } catch (ModelNotFoundException $e) {
-                return response()->json([
-                    'code' => 404,
-                    'message' => 'Not Found',
-                    'description' => 'Institution with' . $id . ' not found.'
-                ], 404);
-            }
+        try {
+            Institution::findOrFail($id)->delete();
+
+            return response()->json([
+                'code' => 200,
+                'message' => 'Successfully Deleted',
+                'description' => 'Institution with id ' . $id . ' successfully deleted.'
+            ], 200);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'code' => 404,
+                'message' => 'Not Found',
+                'description' => 'Institution with id ' . $id . ' not found.'
+            ], 404);
         }
     }
 }

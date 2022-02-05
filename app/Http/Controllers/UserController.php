@@ -4,9 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\UserResource;
 use App\Models\User;
+use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 class UserController extends Controller
 {
@@ -18,9 +19,6 @@ class UserController extends Controller
     public function index()
     {
         return UserResource::collection(User::all());
-        // return response()->json([
-        //     'data' => UserResource::collection(User::all())
-        // ]);
     }
 
     /**
@@ -31,30 +29,7 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-//         $this->validate($request, [
-//             'role_id' => 'required|numeric',
-//             'name' => 'required|string|unique:users',
-//             'email' => 'required|email|unique:users',
-//         ]);
-// 
-//         try {
-//             $user = User::create([
-//                 'role_id' => $request->role_id,
-//                 'name' => $request->name,
-//                 'email' => $request->email,
-//                 'password' => bcrypt($request->password),
-//                 'avatar' => $this->uploadImage($request),
-//             ]);
-// 
-//             return response()->json([$user], 201);
-//         } catch (\Exception $e) {
-//             return response()->json([
-//                 'code' => 409,
-//                 'message' => 'Conflict',
-//                 'description' => 'User creation failed!',
-//                 'exception' => $e
-//             ], 409);
-//         }
+        //
     }
 
     /**
@@ -71,7 +46,7 @@ class UserController extends Controller
             return response()->json([
                 'code' => 404,
                 'message' => 'Not Found',
-                'description' => 'User with ' . $id . ' not found.'
+                'description' => 'User with id ' . $id . ' not found.'
             ], 404);
         }
     }
@@ -86,30 +61,37 @@ class UserController extends Controller
     public function update(Request $request, $id)
     {
         $this->validate($request, [
-            'name' => 'required|string',
+            'name' => 'string',
             'email' => 'email|unique:users',
             'password' => 'string',
-            'avatar' => 'image|mimes:png,jpg,jpeg|max:2048'
         ]);
 
         try {
             $user = User::findOrFail($id);
+            // $user->update($request->all());
+
+            // Cara 1
             $user->update([
-                'role_id' =>$request->role_id,
+                'role_id' => $request->role_id,
                 'name' => $request->name,
                 'email' => $request->email,
                 'password' => bcrypt($request->password),
-                'avatar' => $this->uploadImage($request),
             ]);
-            $user->save();
 
-            // return response()->json(new UserResource($user), 201);
+            // Cara 2
+            // $user->role_id = $request->input('role_id');
+            // $user->name = $request->input('name');
+            // $user->email = $request->input('email');
+            // $user->password = bcrypt($request->input('password'));
+            // $user->avatar = $request->input('avatar');
+            // $user->update($request);
+
             return new UserResource($user);
         } catch (\Exception $e) {
             return response()->json([
                 'code' => 409,
                 'message' => 'Conflict',
-                'description' => 'User update failed!',
+                'description' => 'User update failed.',
                 'exception' => $e
             ], 409);
         }
@@ -126,20 +108,24 @@ class UserController extends Controller
         try {
             User::findOrFail($id)->delete();
 
-            return response()->json([], 204);
+            return response()->json([
+                'code' => 200,
+                'message' => 'Successfully Deleted',
+                 'description' => 'User with ' . $id . ' successfully deleted.'
+            ], 200);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'code' => 404,
                 'message' => 'Not Found',
-                'description' => 'User with' . $id . ' not found.'
+                'description' => 'User with id ' . $id . ' not found.'
             ], 404);
         }
     }
 
-    public function resetPassword($id){
+    public function resetPassword($id) 
+    {
         try {
             $user = User::findOrFail($id);
-
             $user->update([
                 'password'=> bcrypt('password')]
             );
@@ -149,27 +135,32 @@ class UserController extends Controller
             return response()->json([
                 'code' => 404,
                 'message' => 'Not Found',
-                'description' => 'User ' . $id . ' not found.'
+                'description' => 'User with id ' . $id . ' not found.'
             ], 404);
         }
     }
 
-    public function uploadImage(Request $request)
+    public function uploadImage(Request $request, $id)
     {
-        if ($request->photo != null) {
-            $validator = Validator::make($request->all(), [
-                'photo' => 'image|mimes:jpeg,png,jpg|max:2048',
+        try {
+            $request->validate([
+                'avatar' => ['mimes:png,jpg,jpeg', 'max:2048'],
             ]);
-
-            if ($validator->fails()) {
-                return null;
-            }
-
-            $file = $request->file('photo');
-            $path = 'storage/' . basename( $_FILES['photo']['name']);
-            move_uploaded_file($_FILES['photo']['tmp_name'], $path);
-
-            return $path;
-        }
+    
+            $data = User::findOrFail($id);
+            $imageName = $request->id . "-" . "avatar" . "." . $request->avatar->extension();
+            $path = public_path('images/');
+            $request->avatar->move($path, $imageName);
+            $image = "images/" . $imageName;
+            $data->avatar = $image;
+            $data->save();
+    
+            return response()->json([
+                'code' => 200,
+                'data' => new UserResource($data)
+            ]);
+        } catch (Exception $e) {
+            return $e->getMessage();
+        } 
     }
 }

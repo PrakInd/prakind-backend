@@ -16,7 +16,7 @@ class GroupResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'referral_code' => $this->referral_code,
+            'referral_code' => $this->referral_code
         ];
     }
 }

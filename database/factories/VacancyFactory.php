@@ -20,14 +20,14 @@ class VacancyFactory extends Factory
         return [
             'company_id' => $this->faker->randomElement($company_ids),
             'name' => $this->faker->jobTitle(),
-            'description' => $this->faker->paragraph(),
-            'requirements' => $this->faker->paragraph(),
+            'description' => $this->faker->sentence(),
+            'requirements' => $this->faker->sentence(),
             'location' => $this->faker->city(),
             'sector' => $this->faker->jobTitle(),
             'type' => $this->faker->randomElement(['online', 'offline']),
             'paid' => $this->faker->randomElement(['ya', 'tidak']),
             'period_start' => Carbon::today()->subDays(rand(0, 365))->format('D, d M Y'),
-            'period_end' => Carbon::today()->subDays(rand(0, 365))->format('D, d M Y'),
+            'period_end' => Carbon::today()->subDays(rand(0, 365))->format('D, d M Y')
         ];
     }
 }

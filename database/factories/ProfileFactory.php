@@ -24,10 +24,10 @@ class ProfileFactory extends Factory
             'address' => $this->faker->address(),
             'phone' => $this->faker->phoneNumber(),
             'gpa' => $this->faker->randomFloat(2, 0, 4),
-            'semester' => $this->faker->randomDigitNotNull(),
-            'cv' => $this->faker->fileExtension(),
-            'transcript' => $this->faker->fileExtension(),
-            'portfolio' => $this->faker->fileExtension(),
+            'semester' => $this->faker->randomElement(['1', '2', '3', '4', '5', '6', '7', '8']),
+            'cv' => 'cv.' . $this->faker->fileExtension(),
+            'transcript' => 'transcript.' . $this->faker->fileExtension(),
+            'portfolio' => 'portfolio.' . $this->faker->fileExtension()
         ];
     }
 }

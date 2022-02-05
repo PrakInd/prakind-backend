@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\ApplicationResource;
+use Exception;
 use App\Models\Application;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
+use App\Http\Resources\ApplicationResource;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class ApplicationController extends Controller
 {
@@ -28,7 +28,30 @@ class ApplicationController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $this->validate($request, [
+            'status' => 'required|string',
+            'period_start' => 'required|string',
+            'period_end' => 'required|string'
+        ]);
+
+        try {
+            $application = Application::create([
+                'profile_id' => $request->profile_id,
+                'group_id' => $request->group_id,
+                'vacancy_id' => $request->vacancy_id,
+                'status' => $request->status,
+                'period_start' => $request->period_start,
+                'period_end' => $request->period_end,
+            ]);
+
+            return response()->json([$application], 201);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'code' => 404,
+                'message' => 'Not Found',
+                'description' => 'Application creation failed.'
+            ], 404);
+        }
     }
 
     /**
@@ -45,8 +68,8 @@ class ApplicationController extends Controller
             return response()->json([
                 'code' => 404,
                 'message' => 'Not Found',
-                'description' => $e->getMessage(),
-            ]);
+                'description' => 'Application with id ' . $id . ' not found.'
+            ], 404);
         }
     }
 
@@ -59,29 +82,30 @@ class ApplicationController extends Controller
      */
     public function update(Request $request, $id)
     {
-        if (Gate::allows('admin')) {
-            $this->validate($request, [
-                'status' => 'required|string|in:accepted,declined',
-                'period_start' => 'required|string',
-                'period_end' => 'required|string',
+        $this->validate($request, [
+            'status' => 'required|string',
+            'period_start' => 'required|string',
+            'period_end' => 'required|string'
+        ]);
+
+        try {
+            $application = Application::findOrFail($id);
+            $application->update([
+                'profile_id' => $request->profile_id,
+                'group_id' => $request->group_id,
+                'vacancy_id' => $request->vacancy_id,
+                'status' => $request->status,
+                'period_start' => $request->period_start,
+                'period_end' => $request->period_end
             ]);
 
-            try {
-                $application = Application::findOrFail($id);
-                $application->update([
-                    'status' => $request->status,
-                    'period_start' => $request->period_start,
-                    'period_end' => $request->period_end,
-                ]);
-
-                return new ApplicationResource($application);
-            } catch (ModelNotFoundException $e) {
-                return response()->json([
-                    'code' => 404,
-                    'message' => 'Not Found',
-                    'description' => 'Application with ' . $id . ' not found.'
-                ], 404);
-            }
+            return new ApplicationResource($application);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'code' => 404,
+                'message' => 'Not Found',
+                'description' => 'Application with id ' . $id . ' not found.'
+            ], 404);
         }
     }
 
@@ -93,18 +117,44 @@ class ApplicationController extends Controller
      */
     public function destroy($id)
     {
-        if (Gate::allows('pelamar')) {
-            try {
-                Application::findOrFail($id)->delete();
+        try {
+            Application::findOrFail($id)->delete();
+
+            return response()->json([
+                'code' => 200,
+                'message' => 'Successfully Deleted',
+                'description' => 'Application with id ' . $id . ' successfully deleted.'
+            ], 200);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'code' => 404,
+                'message' => 'Not Found',
+                'description' => 'Application with' . $id . ' not found.'
+            ], 404);
+        }
+    }
+
+    public function uploadCertificate(Request $request, $id)
+    {
+        try {
+            $request->validate([
+                'certificate' => ['mimes:pdf', 'max:2048'],
+            ]);
     
-                return response()->json([], 204);
-            } catch (ModelNotFoundException $e) {
-                return response()->json([
-                    'code' => 404,
-                    'message' => 'Not Found',
-                    'description' => 'Application with' . $id . ' not found.'
-                ], 404);
-            }
+            $data = Application::findOrFail($id);
+            $fileName = $request->id . "-certificate" . "." . $request->certificate->extension();
+            $path = public_path('application-certificates/');
+            $request->certificate->move($path, $fileName);
+            $file = "application-certificates/" . $fileName;
+            $data->certificate = $file;
+            $data->save();
+    
+            return response()->json([
+                'code' => 200,
+                'data' => new ApplicationResource($data)
+            ]);
+        } catch (Exception $e) {
+            return $e->getMessage();
         }
     }
 }

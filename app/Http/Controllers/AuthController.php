@@ -20,16 +20,16 @@ class AuthController extends Controller
             'name' => 'required|string',
             'role_id' => 'required',
             'email' => 'required|email|unique:users',
-            'password' => 'required|confirmed',
+            'password' => 'required|confirmed'
         ]);
 
         try {
+            $user = $request->all();
             $user = User::create([
+                'role_id' => $request->role_id,
                 'name' => $request->name,
                 'email' => $request->email,
-                'password' => bcrypt('password'),
-                'role_id' => $request->role_id,
-                // 'photo' => $this->uploadImage($request)
+                'password' => bcrypt('password')
             ]);
             
             return response()->json([$user], 201);
@@ -37,7 +37,7 @@ class AuthController extends Controller
             return response()->json([
                 'code' => 409,
                 'message' => 'Conflict',
-                'description' => 'User Creation Failed!',
+                'description' => 'User Creation Failed.',
                 'exception' => $e
             ], 409);
         }
@@ -47,7 +47,7 @@ class AuthController extends Controller
     {
         $this->validate($request, [
             'email' => 'required|string',
-            'password' => 'required|string',
+            'password' => 'required|string'
         ]);
 
         $credentials = $request->only(['email', 'password']);
@@ -56,7 +56,7 @@ class AuthController extends Controller
             return response()->json([
                 'code' => 401,
                 'message' => 'Unauthorized',
-                'description' => 'User unauthorized.',
+                'description' => 'User unauthorized.'
             ], 401);
         }
 
@@ -67,7 +67,7 @@ class AuthController extends Controller
     {
         Auth::logout();
 
-        return response()->json(['message' => 'Successfully logged out']);
+        return response()->json(['message' => 'Successfully logged out.']);
     }
 
     public function refresh()
