@@ -2,12 +2,12 @@
 
 namespace App\Policies;
 
-use App\Models\Profile;
+use App\Models\Company;
 use App\Models\Roles;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
-class ProfilePolicy
+class CompanyPolicy
 {
     use HandlesAuthorization;
 
@@ -26,10 +26,10 @@ class ProfilePolicy
      * Determine whether the user can view the model.
      *
      * @param  \App\Models\User  $user
-     * @param  \App\Models\Profile  $profile
+     * @param  \App\Models\Company  $company
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function view(User $user, Profile $profile)
+    public function view(User $user, Company $company)
     {
         //
     }
@@ -42,41 +42,41 @@ class ProfilePolicy
      */
     public function create(User $user)
     {
-        return $user->role_id == Roles::IS_PELAMAR;
+        return $user->role_id == Roles::IS_ADMIN; 
     }
 
     /**
      * Determine whether the user can update the model.
      *
      * @param  \App\Models\User  $user
-     * @param  \App\Models\Profile  $profile
+     * @param  \App\Models\Company  $company
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function update(User $user, Profile $profile)
+    public function update(User $user, Company $company)
     {
-        return ($user->role_id == Roles::IS_PELAMAR && $user->id == $profile->user_id);
+        return ($user->role_id == Roles::IS_ADMIN && $user->id == $company->user_id);
     }
 
     /**
      * Determine whether the user can delete the model.
      *
      * @param  \App\Models\User  $user
-     * @param  \App\Models\Profile  $profile
+     * @param  \App\Models\Company  $company
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function delete(User $user, Profile $profile)
+    public function delete(User $user, Company $company)
     {
-        return ($user->role_id == Roles::IS_PELAMAR && $user->id == $profile->user_id);
+        return ($user->role_id == Roles::IS_ADMIN && $user->id == $company->user_id);
     }
 
     /**
      * Determine whether the user can restore the model.
      *
      * @param  \App\Models\User  $user
-     * @param  \App\Models\Profile  $profile
+     * @param  \App\Models\Company  $company
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function restore(User $user, Profile $profile)
+    public function restore(User $user, Company $company)
     {
         //
     }
@@ -85,10 +85,10 @@ class ProfilePolicy
      * Determine whether the user can permanently delete the model.
      *
      * @param  \App\Models\User  $user
-     * @param  \App\Models\Profile  $profile
+     * @param  \App\Models\Company  $company
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function forceDelete(User $user, Profile $profile)
+    public function forceDelete(User $user, Company $company)
     {
         //
     }

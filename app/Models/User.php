@@ -42,7 +42,7 @@ class User extends Authenticatable implements JWTSubject
 
     public function profile()
     {
-        return $this->hasOne('\App\Models\Profile');
+        return $this->hasOne(Profile::class);
     }
 
     public function company()

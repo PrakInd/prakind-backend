@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Exception;
 use App\Models\Profile;
 use App\Http\Resources\ProfileResource;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
@@ -26,9 +27,12 @@ class ProfileController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(Request $request, Profile $profile)
     {   
+        $this->authorize('create', $profile);
+
         $this->validate($request, [
+            'user_id' => 'unique:profiles',
             'address' => 'required|string',
             'phone' => 'required|string',
             'gpa' => 'required|string',
