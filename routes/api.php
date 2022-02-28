@@ -57,14 +57,12 @@ Route::middleware(['auth'])->group(function() {
     Route::prefix('companies')->group(function() {
         Route::post('/{id}/upload-logo', [CompanyController::class, 'uploadLogo']);
         Route::post('', [CompanyController::class, 'store']);
-        Route::get('/{id}', [CompanyController::class, 'show']);
         Route::patch('/{id}', [CompanyController::class, 'update']);
         Route::delete('/{id}', [CompanyController::class, 'destroy']);
     });
 
     Route::prefix('vacancies')->group(function() {
         Route::post('', [VacancyController::class, 'store']);
-        Route::get('/{id}', [VacancyController::class, 'show']);
         Route::patch('/{id}', [VacancyController::class, 'update']);
         Route::delete('/{id}', [VacancyController::class, 'destroy']);
     });
@@ -91,4 +89,6 @@ Route::middleware(['auth'])->group(function() {
 });
 
 Route::get('/vacancies', [VacancyController::class, 'index']);
+Route::get('/vacancies/{id}', [VacancyController::class, 'show']);
 Route::get('/companies', [CompanyController::class, 'index']);
+Route::get('/companies/{id}', [CompanyController::class, 'show']);
