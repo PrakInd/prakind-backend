@@ -24,8 +24,8 @@ class VacancyFactory extends Factory
             'requirements' => $this->faker->sentence(),
             'location' => $this->faker->city(),
             'sector' => $this->faker->jobTitle(),
-            'type' => $this->faker->randomElement(['online', 'offline']),
-            'paid' => $this->faker->randomElement(['ya', 'tidak']),
+            'type' => $this->faker->randomElement(['kerja_dari_kantor', 'kerja_dari_rumah']),
+            'paid' => $this->faker->randomElement(['tersedia', 'tidak_tersedia']),
             'period_start' => Carbon::today()->subDays(rand(0, 365))->format('D, d M Y'),
             'period_end' => Carbon::today()->subDays(rand(0, 365))->format('D, d M Y')
         ];

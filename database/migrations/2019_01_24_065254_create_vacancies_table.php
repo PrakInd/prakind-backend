@@ -21,8 +21,8 @@ class CreateVacanciesTable extends Migration
             $table->text('requirements');
             $table->string('location', 100);
             $table->string('sector', 50);
-            $table->enum('type', ['online', 'offline']);
-            $table->enum('paid', ['ya', 'tidak']);
+            $table->enum('type', ['kerja_dari_kantor', 'kerja_dari_rumah']);
+            $table->enum('paid', ['tersedia', 'tidak_tersedia']);
             $table->string('period_start');
             $table->string('period_end');
             $table->timestamps();
