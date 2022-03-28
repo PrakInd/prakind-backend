@@ -80,12 +80,15 @@ class AuthController extends Controller
         return new UserResource(Auth::user());
     }
 
-    protected function respondWithToken($token)
+    protected function respondWithToken($token) 
     {
         return response()->json([
-            'token' => $token,
+            'success' => true,
+            'message' => "You're logged in",
+            'access_token' => $token,
             'token_type' => 'bearer',
-            'expires_in' => Auth::factory()->getTTL() * 60
+            'expires_in' => Auth::factory()->getTTL() * 60,
+            'user' => auth()->user()
         ], 200);
     }
 }
