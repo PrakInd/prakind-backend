@@ -29,7 +29,7 @@ class AuthController extends Controller
                 'role_id' => $request->role_id,
                 'name' => $request->name,
                 'email' => $request->email,
-                'password' => bcrypt('password')
+                'password' => bcrypt($request->password)
             ]);
             
             return response()->json([$user], 201);

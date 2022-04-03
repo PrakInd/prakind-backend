@@ -62,7 +62,7 @@ Route::middleware(['auth'])->group(function() {
     });
 
     Route::prefix('vacancies')->group(function() {
-        Route::post('', [VacancyController::class, 'store']);
+        Route::post('/{user_id}', [VacancyController::class, 'store']);
         Route::patch('/{id}', [VacancyController::class, 'update']);
         Route::delete('/{id}', [VacancyController::class, 'destroy']);
     });
@@ -89,6 +89,8 @@ Route::middleware(['auth'])->group(function() {
 });
 
 Route::get('/vacancies', [VacancyController::class, 'index']);
+Route::get('/vacancies/list/{user_id}', [VacancyController::class, 'vacancyByUser']);
 Route::get('/vacancies/{id}', [VacancyController::class, 'show']);
 Route::get('/companies', [CompanyController::class, 'index']);
+Route::get('/companies/profile/{user_id}', [CompanyController::class, 'companyByUser']);
 Route::get('/companies/{id}', [CompanyController::class, 'show']);

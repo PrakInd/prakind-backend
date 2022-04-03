@@ -17,7 +17,7 @@ class ApplicationResource extends JsonResource
         return [
             'id' => $this->id,
             'profile' => new ProfileResource($this->profile),
-            'group_id' => $this->group_id,
+            'group' => new GroupResource($this->group),
             'vacancy_id' => $this->vacancy_id,
             'status' => $this->status,
             'period_start' => $this->period_start,

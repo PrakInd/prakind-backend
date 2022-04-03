@@ -21,8 +21,8 @@ class CreateProfilesTable extends Migration
             $table->string('phone', 20);
             $table->string('semester');
             $table->string('gpa', 10);
-            $table->string('cv')->default('cv.pdf');
-            $table->string('transcript')->default('transcript.pdf');
+            $table->string('cv')->nullable()->default('cv.pdf');
+            $table->string('transcript')->nullable()->default('transcript.pdf');
             $table->string('portfolio')->nullable()->default('portfolio.pdf');
             $table->timestamps();
         });

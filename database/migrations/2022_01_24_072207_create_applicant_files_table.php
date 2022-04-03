@@ -16,7 +16,7 @@ class CreateApplicantFilesTable extends Migration
         Schema::create('applicant_files', function (Blueprint $table) {
             $table->id();
             $table->foreignId('application_id')->constrained('applications')->onUpdate('cascade')->onDelete('cascade');
-            $table->string('recommendation_letter')->default('recommendation_letter.pdf');
+            $table->string('recommendation_letter')->nullable()->default('recommendation_letter.pdf');
             $table->string('proposal')->nullable()->default('proposal.pdf');
             $table->timestamps();
         });

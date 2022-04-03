@@ -8,6 +8,8 @@ use App\Http\Resources\CompanyResource;
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
+use function PHPSTORM_META\type;
+
 class CompanyController extends Controller
 {
     /**
@@ -18,6 +20,21 @@ class CompanyController extends Controller
     public function index()
     {
         return CompanyResource::collection(Company::all());
+    }
+
+    public function companyByUser($userId)
+    {
+        try {
+            if ($userId) {
+                return new CompanyResource(Company::where('user_id', '=', (int) $userId)->first());
+            }
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'code' => 404,
+                'message' => 'Not Found',
+                'description' => 'Company with user_id ' . $userId . ' not found.'
+            ], 404);
+        }
     }
 
     /**
@@ -121,7 +138,8 @@ class CompanyController extends Controller
                 'phone'=> $request->phone,
                 'website' => $request->website,
                 'description' => $request->description,
-                'number_of_employee' => $request->number_of_employee
+                'number_of_employee' => $request->number_of_employee,
+                // 'logo' => $this->uploadLogo($request, $id)
             ]);
 
             return new CompanyResource($company);
@@ -161,22 +179,25 @@ class CompanyController extends Controller
     public function uploadLogo(Request $request, $id)
     {
         try {
-            $request->validate([
-                'logo' => ['mimes:png,jpg,jpeg', 'max:2048'],
-            ]);
-    
-            $data = Company::findOrFail($id);
-            $imageName = $request->id . "-" . "companyLogo" . "." . $request->logo->extension();
-            $path = public_path('company-logo/');
-            $request->logo->move($path, $imageName);
-            $image = "company-logo/" . $imageName;
-            $data->logo = $image;
-            $data->save();
-    
-            return response()->json([
-                'code' => 200,
-                'data' => new CompanyResource($data)
-            ]);
+            if ($request->logo != null) {
+                $request->validate([
+                    'logo' => ['mimes:png,jpg,jpeg', 'max:2048'],
+                ]);
+        
+                $data = Company::findOrFail($id);
+                $imageName = $request->id . "-" . "companyLogo" . "." . $request->logo->extension();
+                $path = public_path('company-logo/');
+                $request->logo->move($path, $imageName);
+                $image = "company-logo/" . $imageName;
+                $data->logo = $image;
+                $data->save();
+        
+                return response()->json([
+                    'code' => 200,
+                    'message' => 'Image Successfully Updated',
+                    'data' => new CompanyResource($data)
+                ]);
+            }
         } catch (Exception $e) {
             return $e->getMessage();
         }

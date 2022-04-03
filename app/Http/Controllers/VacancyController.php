@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\VacancyResource;
+use App\Models\Company;
 use App\Models\Vacancy;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
@@ -19,13 +20,28 @@ class VacancyController extends Controller
         return VacancyResource::collection(Vacancy::all());
     }
 
+    public function vacancyByUser($userId)
+    {
+        try {
+            $company = Company::where('user_id', '=', (int) $userId)->first();
+            
+            return VacancyResource::collection(Vacancy::where('company_id', $company->id)->get());
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'code' => 404,
+                'message' => 'Not Found',
+                'description' => 'Vacancy with company_id ' . $company->id . ' not found.'
+            ], 404);
+        }
+    }
+
     /**
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(Request $request, $userId)
     {
         $this->validate($request, [
             'name' => 'required|string',
@@ -40,8 +56,10 @@ class VacancyController extends Controller
         ]);
 
         try {
+            $company = Company::where('user_id', '=', (int) $userId)->first();
+
             $vacancy = Vacancy::create([
-                'company_id' => $request->company_id,
+                'company_id' => $company->id,
                 'name' => $request->name,
                 'description' => $request->description,
                 'requirements' => $request->requirements,

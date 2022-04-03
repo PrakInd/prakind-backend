@@ -33,7 +33,7 @@ class GroupController extends Controller
 
         try {
             $group = Group::create([
-                'referral_code' => $request->referral_code
+                'referral_code' => $this->generateGroupToken()
             ]);
 
             return response()->json([$group], 201);
@@ -117,5 +117,28 @@ class GroupController extends Controller
                 'description' => 'Group with id ' . $id . ' not found.'
             ], 404);
         }
+    }
+
+    // public function generateGroupToken()
+    // {
+    //     $tokenLength = 12;
+    //     $str = "1234567890abcdefghijklmnopqrstuvwxyz$";
+    //     $randStr = substr(str_shuffle($str), 0, $tokenLength);
+    // 
+    //     return $randStr;
+    // }
+
+    // public function generateGroupToken()
+    // {
+    //     $randStr = uniqid('rafi', true);
+    // 
+    //     return $randStr;
+    // }
+    
+    public function generateGroupToken()
+    {
+        $randStr = uniqid('rafi', true);
+    
+        return $randStr;
     }
 }
