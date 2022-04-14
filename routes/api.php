@@ -46,11 +46,12 @@ Route::middleware(['auth'])->group(function() {
     Route::resource('groups', GroupController::class);
 
     Route::prefix('profiles')->group(function() {
-        Route::post('/{id}/upload/{document}', [ProfileController::class, 'uploadDocument']);
+        Route::post('/{user_id}/upload/{document}', [ProfileController::class, 'uploadDocument']);
         Route::get('', [ProfileController::class, 'index']);
         Route::post('', [ProfileController::class, 'store']);
         Route::get('/{id}', [ProfileController::class, 'show']);
-        Route::patch('/{id}', [ProfileController::class, 'update']);
+        Route::get('/detail/{id}', [ProfileController::class, 'profileByUser']);
+        Route::post('/{user_id}', [ProfileController::class, 'update']);
         Route::delete('/{id}', [ProfileController::class, 'destroy']);
     });
 

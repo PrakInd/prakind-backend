@@ -78,6 +78,21 @@ class ProfileController extends Controller
         }
     }
 
+    public function profileByUser($userId)
+    {
+        try {
+            if ($userId) {
+                return new ProfileResource(Profile::where('user_id', $userId)->first());
+            }
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'code' => 404,
+                'message' => 'Not Found',
+                'description' => 'Profile with user_id ' . $userId . ' not found.'
+            ], 404);
+        }
+    }
+
     /**
      * Update the specified resource in storage.
      *
@@ -85,10 +100,8 @@ class ProfileController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, $userId)
     {
-        // $this->authorize('update', $id);
-
         $this->validate($request, [
             'address' => 'required|string',
             'phone' => 'required|string',
@@ -97,7 +110,7 @@ class ProfileController extends Controller
         ]);
 
         try {
-            $profile = Profile::findOrFail($id);
+            $profile = Profile::where('user_id', $userId)->first();
             $profile->update([
                 'user_id' => $request->user_id,
                 'institution_id' => $request->institution_id,
@@ -112,7 +125,7 @@ class ProfileController extends Controller
             return response()->json([
                 'code' => 404,
                 'message' => 'Not Found',
-                'description' => 'Profile with id ' . $id . ' not found.'
+                'description' => 'Profile with user_id ' . $userId . ' not found.'
             ], 404);
         }
     }
@@ -142,14 +155,14 @@ class ProfileController extends Controller
         }
     }
 
-    public function uploadDocument(Request $request, $id, $document)
+    public function uploadDocument(Request $request, $userId, $document)
     {
         try {
             $request->validate([
                 $this->documentType($document) => ['mimes:pdf', 'max:2048'],
             ]);
     
-            $data = Profile::findOrFail($id);
+            $data = Profile::where('user_id', $userId)->first();
             $fileName = $request->id . "-" . $document . "." . $request->$document->extension();
             $path = public_path('profile-documents/');
             $request->$document->move($path, $fileName);

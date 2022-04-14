@@ -23,7 +23,7 @@ class VacancyController extends Controller
     public function vacancyByUser($userId)
     {
         try {
-            $company = Company::where('user_id', '=', (int) $userId)->first();
+            $company = Company::where('user_id', '=', $userId)->first();
             
             return VacancyResource::collection(Vacancy::where('company_id', $company->id)->get());
         } catch (ModelNotFoundException $e) {
@@ -56,8 +56,8 @@ class VacancyController extends Controller
         ]);
 
         try {
-            $company = Company::where('user_id', '=', (int) $userId)->first();
-
+            $company = Company::where('user_id', '=', $userId)->first();
+            
             $vacancy = Vacancy::create([
                 'company_id' => $company->id,
                 'name' => $request->name,
